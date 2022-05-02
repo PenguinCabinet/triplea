@@ -9,6 +9,7 @@ import games.strategy.engine.data.Route;
 import games.strategy.engine.data.Territory;
 import games.strategy.engine.data.Unit;
 import games.strategy.engine.delegate.IDelegateBridge;
+import games.strategy.engine.player.Player;
 import games.strategy.triplea.Properties;
 import games.strategy.triplea.attachments.UnitAttachment;
 import games.strategy.triplea.delegate.battle.BattleTracker;
@@ -62,7 +63,9 @@ public class UndoableMove extends AbstractUndoableMove {
     if (reasonCantUndo != null) {
       return reasonCantUndo;
     } else if (!dependents.isEmpty()) {
-      return "Move " + (dependents.iterator().next().getIndex() + 1) + " must be undone first";
+      return "Move "
+          + (CollectionUtils.getAny(dependents).getIndex() + 1)
+          + " must be undone first";
     } else {
       throw new IllegalStateException("no reason");
     }
@@ -135,14 +138,12 @@ public class UndoableMove extends AbstractUndoableMove {
                 && Properties.getDamageFromBombingDoneToUnitsInsteadOfTerritories(
                     data.getProperties())
                 && !Properties.getRaidsMayBePreceededByAirBattles(data.getProperties())) {
+              Player player = bridge.getRemotePlayer(bridge.getGamePlayer());
               while (target == null) {
-                target =
-                    bridge
-                        .getRemotePlayer(bridge.getGamePlayer())
-                        .whatShouldBomberBomb(end, enemyTargets, List.of(unit));
+                target = player.whatShouldBomberBomb(end, enemyTargets, List.of(unit));
               }
             } else if (!enemyTargets.isEmpty()) {
-              target = enemyTargets.iterator().next();
+              target = CollectionUtils.getAny(enemyTargets);
             }
             if (target != null) {
               targets = new HashMap<>();
